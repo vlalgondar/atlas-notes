@@ -1,0 +1,102 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Organization {
+  id         String     @id @default(uuid())
+  name       String
+  members    OrgMember[]
+  spaces     Space[]
+  createdAt  DateTime   @default(now())
+}
+
+model User {
+  id             String      @id @default(uuid())
+  email          String      @unique
+  name           String?
+  image          String?
+  orgMemberships OrgMember[]
+  createdAt      DateTime    @default(now())
+}
+
+model OrgMember {
+  orgId  String
+  userId String
+  role   String    @default("member")
+
+  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([orgId, userId])
+}
+
+model Space {
+  id        String   @id @default(uuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name      String
+  isPublic  Boolean  @default(false)
+  pages     Page[]
+  createdAt DateTime @default(now())
+}
+
+model Page {
+  id          String   @id @default(uuid())
+  spaceId     String
+  space       Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  title       String
+  slug        String   @unique
+  contentJson Json?
+  contentMd   String?
+  authorId    String
+  updatedAt   DateTime @updatedAt
+  isArchived  Boolean  @default(false)
+  comments    Comment[]
+}
+
+model Comment {
+  id         String   @id @default(uuid())
+  pageId     String
+  page       Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  authorId   String
+  body       String
+  anchorPath String
+  createdAt  DateTime @default(now())
+  resolvedBy String?
+}
+
+model File {
+  id         String   @id @default(uuid())
+  orgId      String
+  uploaderId String
+  name       String
+  mime       String
+  storageKey String
+  size       Int
+  createdAt  DateTime @default(now())
+}
+
+model IngestionJob {
+  id        String   @id @default(uuid())
+  fileId    String
+  status    String   @default("pending")
+  error     String?
+  updatedAt DateTime @updatedAt
+}
+
+model DocChunk {
+  id         String   @id @default(uuid())
+  sourceType String   // 'page' | 'file'
+  sourceId   String
+  section    String
+  position   Int
+  text       String
+  tokens     Int
+  createdAt  DateTime @default(now())
+  // embedding VECTOR(768) will be added via raw SQL (pgvector)
+}

@@ -10,8 +10,12 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@auth/prisma-adapter": "^2.10.0",
+    "@prisma/client": "^6.15.0",
     "@tanstack/react-query": "^5.85.5",
     "next": "15.5.0",
+    "next-auth": "^4.24.11",
+    "prisma": "^6.15.0",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },
@@ -28,6 +32,5 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   },
-  
   "packageManager": "pnpm@10.15.0+sha512.486ebc259d3e999a4e8691ce03b5cac4a71cbeca39372a9b762cb500cfdf0873e2cb16abe3d951b1ee2cf012503f027b98b6584e4df22524e0c7450d9ec7aa7b"
 }
