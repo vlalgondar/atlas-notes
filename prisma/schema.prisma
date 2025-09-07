@@ -8,11 +8,11 @@ generator client {
 }
 
 model Organization {
-  id         String     @id @default(uuid())
-  name       String
-  members    OrgMember[]
-  spaces     Space[]
-  createdAt  DateTime   @default(now())
+  id        String      @id @default(uuid())
+  name      String
+  members   OrgMember[]
+  spaces    Space[]
+  createdAt DateTime    @default(now())
 }
 
 model User {
@@ -22,12 +22,15 @@ model User {
   image          String?
   orgMemberships OrgMember[]
   createdAt      DateTime    @default(now())
+
+  accounts Account[]
+  sessions Session[]
 }
 
 model OrgMember {
   orgId  String
   userId String
-  role   String    @default("member")
+  role   String @default("member")
 
   org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -36,26 +39,26 @@ model OrgMember {
 }
 
 model Space {
-  id        String   @id @default(uuid())
+  id        String       @id @default(uuid())
   orgId     String
   org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   name      String
-  isPublic  Boolean  @default(false)
+  isPublic  Boolean      @default(false)
   pages     Page[]
-  createdAt DateTime @default(now())
+  createdAt DateTime     @default(now())
 }
 
 model Page {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   spaceId     String
-  space       Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  space       Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   title       String
-  slug        String   @unique
+  slug        String    @unique
   contentJson Json?
   contentMd   String?
   authorId    String
-  updatedAt   DateTime @updatedAt
-  isArchived  Boolean  @default(false)
+  updatedAt   DateTime  @updatedAt
+  isArchived  Boolean   @default(false)
   comments    Comment[]
 }
 
@@ -91,7 +94,7 @@ model IngestionJob {
 
 model DocChunk {
   id         String   @id @default(uuid())
-  sourceType String   // 'page' | 'file'
+  sourceType String // 'page' | 'file'
   sourceId   String
   section    String
   position   Int
@@ -99,4 +102,40 @@ model DocChunk {
   tokens     Int
   createdAt  DateTime @default(now())
   // embedding VECTOR(768) will be added via raw SQL (pgvector)
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
