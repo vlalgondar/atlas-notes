@@ -17,9 +17,11 @@ model Organization {
 
 model User {
   id             String      @id @default(uuid())
-  email          String      @unique
+  email          String?      @unique
+  emailVerified DateTime?
   name           String?
   image          String?
+  
   orgMemberships OrgMember[]
   createdAt      DateTime    @default(now())
 
@@ -76,6 +78,7 @@ model Comment {
 model File {
   id         String   @id @default(uuid())
   orgId      String
+  spaceId    String            // ✅ add
   uploaderId String
   name       String
   mime       String
